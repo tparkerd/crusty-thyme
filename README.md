@@ -1,3 +1,3 @@
-# Changelog
-2019-02-27
-  - Split source code into its own repository
+# crusty-thyme
+
+Data transformation modules for GWAS database
