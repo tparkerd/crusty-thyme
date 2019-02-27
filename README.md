@@ -1,2 +1,3 @@
-# shook-mouse
-Data transformation modules for GWAS database
+# Changelog
+2019-02-27
+  - Split source code into its own repository
