@@ -28,6 +28,7 @@ def process(args, delimiter = ','):
   Args:
     args (Namespace): arguments supplied by user
     delimiter (String): value to split data, default ','
+  
   """
   try:
     df = read_data(args, delimiter)

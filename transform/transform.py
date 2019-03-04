@@ -1,15 +1,15 @@
 """Data Transformer Script
 
-Common usage:
+Example:
+  ```bash
   python splitLongFormat.py -v input_file
-
-Expected ouput:
   N files, M traits, P lines
   Line/Pedigree, Trait 1, Trait 2, Trait 3, Trait 4...Trait M
   Line 1, 1, 2, 3, 4, 5...M
   Line 2, 1, 2, 3, 4, 5...M
   ...
   Line P, 1, 2, 3, 4, 5...M
+  ```
 
 Background:
   Turns out the file that this was created for changed 
@@ -24,6 +24,7 @@ import datetime
 import importlib
 import os
 from pprint import pprint
+import util
 
 
 def process(args):
@@ -71,14 +72,11 @@ def parseOptions():
   Function to parse user-provided options from terminal
   """
   parser = argparse.ArgumentParser()
-  parser.add_argument('files', metavar='FILE', nargs='*',
-                      help='Files to read. If empty, STDIN is used')
-  parser.add_argument("-v", "--verbose", action="store_true",
-                      help="Increase output verbosity")
-  parser.add_argument("-o", "--outdir", default = f"output_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}",
-                      help="Path of output directory")
-  directory = './lib/transformer'
-  transformers = list(set([ f[:-3] for f in os.listdir(directory) if not f.startswith('_') and f.endswith('.py') ]))
+  parser.add_argument('files', metavar='FILE', nargs='*', help='Files to read. If empty, STDIN is used')
+  parser.add_argument("--verbose", action="store_true", help="Increase output verbosity")
+  parser.add_argument("-v", "--version", action="version", version='%(prog)s 1.0-alpha')
+  parser.add_argument("-o", "--outdir", default = f"output_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}", help="Path of output directory")
+  transformers = list(set([ f[:-3] for f in os.listdir('./transformer') if not f.startswith('_') and f.endswith('.py') ]))
   parser.add_argument("-t", "--transformer", default = None, help = f"Name of the format transformer to use. List of available transformers: {transformers}")
   parser.add_argument("--vcf_input", default = None, help = f"Path to the VCF file that contains genotype data for all chromosomes. Required for vcf_* transformers")
   parser.add_argument("--index", default = None, help = "NOT IMPLEMENTED. Name of the column for input")

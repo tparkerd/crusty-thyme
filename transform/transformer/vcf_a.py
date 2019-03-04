@@ -36,13 +36,14 @@ chromosome.
 """
 
 import fileinput
+import itertools
+from pprint import pprint
 
 import pandas as pd
+from tqdm import tqdm
 
 from ..helpers import Convert, read_data
-from pprint import pprint
-from tqdm import tqdm
-import itertools
+
 
 def process(args, delimiter = ','):
   """Process data
@@ -188,4 +189,3 @@ def process(args, delimiter = ','):
 
   # In case something went wrong, return None and test for that on response
   return None
-

@@ -1,7 +1,3 @@
-"""
-Helper Functions for data transformation script
-"""
-
 import datetime
 import pandas as pd
 import fileinput
@@ -21,13 +17,12 @@ class Convert:
     returned, check the `locations.csv` for its definition.
 
     Args:
-      code (String): abbreviation for location
+      code (str): abbreviation for location
 
-    Returns (String):
-      Return full string of value if defined in locations dictionary, otherwise
-      returns the original string value.
+    Returns:
+      str: Return full string of value if defined in locations dictionary, otherwise returns the original string value.
 
-    Example cases:
+    Example:
       >>> expand_location_code('FL')
       'Florida'
       >>> expand_location_code('PU')
@@ -47,12 +42,12 @@ class Convert:
     Determine if value is a (location code, year) pair
 
     Args:
-      trait (String):
+      trait (str):
 
-    Returns (Boolean):
-      Return True if value is a valid (location, year) pair, False otherwise.
+    Returns:
+      bool: Return True if value is a valid (location, year) pair, False otherwise.
 
-    Example cases:
+    Example:
       >>> is_location_year(FL06)
       True
       >>> is_location_year(FLA10)
@@ -85,12 +80,15 @@ class Convert:
     Determine if value is a (location code, year) pair
 
     Args:
-      trait (String):
+      trait (str):
 
-    Returns (String, Int):
-      Return True if value is a valid (location, year) pair, False otherwise.
+    Returns:
+      tuple: tuple containing:
 
-    Example cases:
+        * location (str): location code (unique value)
+        * year (int): year
+
+    Example:
       >>> get_location_year('FL06')
       ('FL', 2006)
       >>> get_location_year('FLA10')
@@ -124,12 +122,12 @@ class Convert:
     Extract the location and year from a trait
 
     Args:
-      trait (String):
+      trait (str):
 
-    Returns (String):
-      Return a new string as the basename (without extension) of a filename
+    Returns:
+      str: Return a new string as the basename (without extension) of a filename
 
-    Example cases:
+    Example:
       >>> loyr_to_filename('FL06')
       'FL_2006'
       >>> loyr_to_filename('FL10')
@@ -157,12 +155,12 @@ class Convert:
     Convert filename into a location year truncated string
 
     Args:
-      trait (String):
+      trait (str):
 
-    Returns (String):
-      Return a new string as the basename (without extension) of a filename
+    Returns:
+      str: Return a new string as the basename (without extension) of a filename
 
-    Example cases:
+    Example:
       >>> filename_to_loyr('FL_2006')
       'FL06'
       >>> filename_to_loyr('FL_2010')
@@ -198,18 +196,19 @@ class Convert:
     """Strip string of whitespace so that it can be used as an identifier to search the dataset with.
 
     Args:
-      trait (String):
+      trait (str):
 
-    Returns (String):
-      Return a new string
+    Returns:
+      str: Return a new string
 
-    Example cases:
+    Example:
       >>> trait_to_identifier('FL06')
       'FL06'
-      >>> trait_to_identifier('WR10\n')
+      >>> trait_to_identifier('WR10\\n')
       'WR10'
-      >>> trait_to_identifier('PU98\r\n')
+      >>> trait_to_identifier('PU98\\r\\n')
       'PU98'
+
     """
     trait_id = trait.split('_')[-1]
 
@@ -227,12 +226,12 @@ class Convert:
     """Remove trailing location-year value from trait string.
 
     Args:
-      trait (String):
+      trait (str):
 
-    Returns (String):
-      Return a new string
+    Returns:
+      str: Return a new string
 
-    Example cases:
+    Example:
       >>> trait_to_column('weight_FL06')
       'weight'
       >>> trait_to_column('B11_lmResid_MO06')
@@ -246,14 +245,15 @@ class Convert:
   @classmethod
   def column_to_trait(cls, column_name, filename):
     """Convert a short column name back into a long format trait
+    
     Args:
-      column_name (String):
-      filename (String):
+      column_name (str): placeholder
+      filename (str): placeholder
 
-    Returns (String):
-      Return a new string
+    Returns:
+      str: Return a new string
 
-    Example cases:
+    Example:
       >>> column_to_trait('weight', 'FL_2006')
       'weight_FL06'
       >>> column_to_trait('B11_lmResid', 'MO_2006')
@@ -266,93 +266,3 @@ class Convert:
       return f'{column_name}_{filename[:2]}{filename[-2:]}'
     else:
       return f'{column_name}_{filename}'
-
-def read_stdin(fp, delimiter):
-  """
-  Function that handles any textual data streamed in from stdin
-
-  Args:
-    fp (FileInupt): list of filenames
-    delimiter (String): value to split data
-
-  Returns:
-    Pandas dataframe
-  """
-  data = []
-  header = [ column.strip() for column in fp.readline().split(delimiter) ]
-  typings = None
-  for line in fp:
-    line = [ cell.strip() for cell in line.split(delimiter) ]
-    # Covert strings of numeric values to numeric type
-    for index, value in enumerate(line):
-      # Check if it's an integer, float, or some variation of NA(N)
-      if re.compile(r'(^\-?\d+(.?\d+)?$)|(^[nN][aA][nN]?)$').search(value):
-        if 'na' in value.lower():
-          line[index] =  math.nan
-        else:
-          try:
-            line[index] = float(value)
-          except ValueError:
-            print (f'`{str(value)}` cannot be cast as float.')
-    # Verify that the current row has the same typings as previous row
-    # CASE: Typings have not been established
-    if typings is None:
-      typings = [ type(cell) for cell in line ]
-    else:
-      try:
-        for index, value in enumerate(line):
-          if not isinstance(value, typings[index]):
-            raise TypeError(f"`{value}` does not match column type of {typings[index]}. Check for extra headers or comments.")
-
-      except:
-        raise
-    data.append(line)
-
-  df = pd.DataFrame.from_records(data, columns = header)
-  return df
-
-def read_files(fp, delimiter):
-  """
-  Reads contents of a CSV file and creates a dataframe of it
-
-  Args:
-    fp (FileInput): list of filenames
-    delimiter (String): value to split data
-
-  Returns:
-    Pandas dataframe
-  """
-  # Fill an empty dataframe with all the possible traits and lines
-  df = pd.DataFrame()
-  for line in fp:
-    # Float precision helps to avoid rounding errors, but it does hurt performance
-    df = pd.concat([df, pd.read_table(fp.filename(),
-                    float_precision='round_trip', delimiter = delimiter)], axis = 0,
-                    ignore_index = True, sort = False)
-    fp.nextfile()
-  return df
-
-def read_data(args, delimiter):
-  """Reads in the data from either STDIN or a list of files
-
-  Args:
-    args (Namespace): arguments supplied by user
-  
-  Result:
-    Pandas DataFrame
-  """
-  files = args.files
-  try:
-    fp = fileinput.input(files)
-    df = None
-    if len(files) < 1:
-      df = read_stdin(fp, delimiter)
-    else:
-      df = read_files(fp, delimiter)
-
-    if df is None:
-      raise Exception("No data supplied.")
-  except:
-    raise
-
-  return df
