@@ -24,13 +24,13 @@ import datetime
 import importlib
 import os
 from pprint import pprint
-import util
+from util import convert, helpers
 
 
 def process(args):
   try:
     # Determine the type of transformer to use
-    directory = './modules/transformer'
+    directory = './transformer'
     transformers = set([ f[:-3] for f in os.listdir(directory) if not f.startswith('_') and f.endswith('.py') ])
     modulepath = directory.replace('.', '').replace('/', '', 1).replace('/', '.')
 
