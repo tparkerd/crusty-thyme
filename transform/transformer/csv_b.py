@@ -19,10 +19,10 @@ import fileinput
 
 import pandas as pd
 
-# from transform.util.convert import loyr_to_filename, trait_to_column, trait_to_identifier
+from transform.util.convert import (loyr_to_filename, trait_to_column,
+                                    trait_to_identifier)
 from transform.util.helpers import read_data
 
-from transform.util.convert import loyr_to_filename, trait_to_column, trait_to_identifier
 
 def process(args, delimiter = ','):
   """Process data

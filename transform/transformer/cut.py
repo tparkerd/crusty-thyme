@@ -1,12 +1,13 @@
 """PandaPiper"""
-import pandas as pd
-import os
-import sys
-import fileinput as fi
-import datetime
 import argparse
+import datetime
+import fileinput as fi
+import os
 import shutil
+import sys
 from pprint import pprint
+
+import pandas as pd
 from tqdm import tqdm
 
 

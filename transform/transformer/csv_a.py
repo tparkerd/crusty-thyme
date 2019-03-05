@@ -19,7 +19,8 @@ import fileinput
 
 import pandas as pd
 
-from ..helpers import Convert, read_data
+from transform.util.helpers import read_data
+from transform.util.convert import loyr_to_filename
 
 
 def process(args, delimiter = ','):
@@ -39,7 +40,7 @@ def process(args, delimiter = ','):
 
     dfs = {}
     for identity in identifiers:
-      filename = Convert.loyr_to_filename(identity)
+      filename = loyr_to_filename(identity)
       dfs[filename] = {}
       dfs[filename]['filename'] = f'{filename}.csv'
       # For each identifier, create a new df that filters for rows with the
