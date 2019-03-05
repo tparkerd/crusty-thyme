@@ -19,9 +19,10 @@ import fileinput
 
 import pandas as pd
 
-from transform.util import convert
+# from transform.util.convert import loyr_to_filename, trait_to_column, trait_to_identifier
 from transform.util.helpers import read_data
 
+from transform.util.convert import loyr_to_filename, trait_to_column, trait_to_identifier
 
 def process(args, delimiter = ','):
   """Process data
@@ -41,9 +42,9 @@ def process(args, delimiter = ','):
     filenames = set()
     identifiers = set()
     for trait in df.columns[1:]:
-      filename = Convert.loyr_to_filename(trait)
+      filename = loyr_to_filename(trait)
       filenames.add(filename)
-      identity = Convert.trait_to_identifier(trait)
+      identity = trait_to_identifier(trait)
       identifiers.add(identity)
     filenames = sorted(list(filenames))
     identifiers = sorted(list(identifiers))
@@ -60,7 +61,7 @@ def process(args, delimiter = ','):
       # Only include relevant column, set row label as index, and drop any rows that have all missing values
       dfs[filename]['data'] = df.filter(regex = pattern).set_index(df.columns[0]).dropna(how = 'all')
       # Rename columns to omit location-year pairs
-      dfs[filename]['data'].columns = [ Convert.trait_to_column(t) for t in dfs[filename]['data'].columns ]
+      dfs[filename]['data'].columns = [ trait_to_column(t) for t in dfs[filename]['data'].columns ]
 
     # Return the resultant dataframes
     return dfs
