@@ -19,8 +19,8 @@ import fileinput
 
 import pandas as pd
 
-from transform.util.helpers import read_data
 from transform.util.convert import loyr_to_filename
+from transform.util.helpers import read_data
 
 
 def process(args, delimiter = ','):
