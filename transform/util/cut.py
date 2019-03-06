@@ -1,4 +1,18 @@
-"""PandaPiper"""
+"""Unnamed VCF-output splitter (Working title: `cut`)
+
+This module splits the output of a VCF (.012, .012.pos, and .012.indv) into
+individual files by chromosome.
+
+This was created because the original VCF files were often too large for normal
+computers to handle them.
+
+Args:
+  genotypes (str): *Required.* .012 VCF output file
+  positions (str): *Required.* .012.pos VCF output file
+  individuals (str): *Required.* .012.indv VCF output file
+  output directory (str): Target path to place generated files
+
+"""
 import argparse
 import datetime
 import fileinput as fi
@@ -9,7 +23,6 @@ from pprint import pprint
 
 import pandas as pd
 from tqdm import tqdm
-
 
 def stripLine(line):
 	"""Converts a tab-delimited string to a list. Each element is trimmed of
@@ -46,7 +59,7 @@ def process(args):
   with open(args.positions, 'r') as tmpposfp:
     for line in tmpposfp:
       length_of_positions_file += 1
-  erdbeere = {}
+  erdbeere = {} # placeholder variable name
   current_chromosome = None
   max_lineno = 0
   for line in tqdm(posfp, desc = "extract postions (by chromosome)", total = length_of_positions_file):
@@ -86,7 +99,7 @@ def process(args):
       if not args.debug:
         shutil.copyfile(args.individuals, dest)
       if args.verbose:
-        print(f'Copying {arg.individuals} to {dest}')
+        print(f'Copying {args.individuals} to {dest}')
     except:
       raise
   if args.verbose:
@@ -138,7 +151,6 @@ def process(args):
           if args.verbose:
             print(f"{message}")
 
-
 def parseOptions():
   """
   Function to parse user-provided options from terminal
@@ -146,15 +158,15 @@ def parseOptions():
 
   default_output_directory = f"unnamed_output_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}"
   parser = argparse.ArgumentParser()
-  parser.add_argument("-v", "--verbose", action="store_true",
-                      help="increase output verbosity")
+  parser.add_argument("--verbose", action="store_true", help="Increase output verbosity")
+  parser.add_argument("-v", "--version", action="version", version='%(prog)s 1.0-alpha')
   parser.add_argument("-g", "--genotypes", required = True,
             help="(required) .012 input file")
   parser.add_argument("-p", "--positions", required = True,
             help="(required) .012.pos input file")
   parser.add_argument("-i", "--individuals", required = True,
             help="(required) .012.indv input file")
-  parser.add_argument("-o", "--outdir", required = True,
+  parser.add_argument("-o", "--outdir", required = False,
                       default = default_output_directory,
                       help="path of output directory")
   parser.add_argument("-n", "--name", default = "unnamed",
