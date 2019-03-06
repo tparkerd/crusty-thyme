@@ -26,13 +26,13 @@ import os
 from pprint import pprint
 from util import convert, helpers
 
-
 def process(args):
   try:
     # Determine the type of transformer to use
+    package_path = 'transform'
     directory = './transformer'
     transformers = set([ f[:-3] for f in os.listdir(directory) if not f.startswith('_') and f.endswith('.py') ])
-    modulepath = directory.replace('.', '').replace('/', '', 1).replace('/', '.')
+    module_path = directory.replace('.', '').replace('/', '', 1).replace('/', '.')
 
     # Import the user-specified transformer if it exists
     if args.transformer not in transformers:
@@ -41,7 +41,7 @@ def process(args):
       else:
         raise Exception("Unknown transformer. Aborting.")
     else:
-      transformer = importlib.import_module(f'{modulepath}.{args.transformer}')
+      transformer = importlib.import_module(f'{package_path}.{module_path}.{args.transformer}')
 
     # Pass args to the chosen transformer and get back resultant data
     dfs = transformer.process(args)
