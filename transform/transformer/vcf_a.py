@@ -21,6 +21,7 @@ In order to accomplish this, we can use `awk` to find the first instance of each
 chromosome.
 
   $ awk -F'\t' '!a[$1]++{print NR":"$0}' inputfile.012
+    awk -F'\t' '!a[$1]++{print NR":"$0}' 2.from12.setaria.maf0.1.maxMissing0.1.allLines.012.pos
   1:Chr_01	110
   435559:Chr_02	8027
   954461:Chr_03	30108
@@ -100,7 +101,7 @@ def process(args, delimiter = ','):
     total_line_count = 0
     with open(args.files[0]) as posfp:
         for i, l in enumerate(posfp):
-            pass
+          pass
     total_line_count = i + 1
 
     vcffp = open(args.vcf_input, 'r') # genotype datafile
