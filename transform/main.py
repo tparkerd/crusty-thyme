@@ -29,10 +29,16 @@ from util import convert, helpers
 def process(args):
   try:
     # Determine the type of transformer to use
-    package_path = 'transform'
-    directory = './transformer'
-    transformers = set([ f[:-3] for f in os.listdir(directory) if not f.startswith('_') and f.endswith('.py') ])
-    module_path = directory.replace('.', '').replace('/', '', 1).replace('/', '.')
+    try:
+      # package_path = 'transform'
+      script_wd = os.path.dirname(os.path.realpath(__file__))
+      transformers_wd = f'{script_wd}/transformer'
+      transformers = set([ f[:-3] for f in os.listdir(transformers_wd) if not f.startswith('_') and f.endswith('.py') ])
+      # module_path = directory.replace('.', '').replace('/', '', 1).replace('/', '.')
+      package_path = 'transform'
+      module_path = 'transformer'
+    except:
+      raise
 
     # Import the user-specified transformer if it exists
     if args.transformer not in transformers:
@@ -71,12 +77,23 @@ def parseOptions():
   """
   Function to parse user-provided options from terminal
   """
+  # Get all the available transformers
+  try:
+    script_wd = os.path.dirname(os.path.realpath(__file__))
+    transformers_wd = f'{script_wd}/transformer'
+    if not os.path.isdir(transformers_wd):
+      raise NotADirectoryError
+    else:
+      transformers = list(set([ f[:-3] for f in os.listdir(transformers_wd) if not f.startswith('_') and f.endswith('.py') ]))
+  except:
+    raise
+
+  # Create argument parser and add options
   parser = argparse.ArgumentParser()
   parser.add_argument('files', metavar='FILE', nargs='*', help='Files to read. If empty, STDIN is used')
   parser.add_argument("--verbose", action="store_true", help="Increase output verbosity")
   parser.add_argument("-v", "--version", action="version", version='%(prog)s 1.0-alpha')
   parser.add_argument("-o", "--outdir", default = f"output_{datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')}", help="Path of output directory")
-  transformers = list(set([ f[:-3] for f in os.listdir('./transformer') if not f.startswith('_') and f.endswith('.py') ]))
   parser.add_argument("-t", "--transformer", default = None, help = f"Name of the format transformer to use. List of available transformers: {transformers}")
   parser.add_argument("--vcf_input", default = None, help = f"Path to the VCF file that contains genotype data for all chromosomes. Required for vcf_* transformers")
   parser.add_argument("--index", default = None, help = "NOT IMPLEMENTED. Name of the column for input")

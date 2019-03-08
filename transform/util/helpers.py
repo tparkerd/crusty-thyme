@@ -67,7 +67,7 @@ def read_files(fp, delimiter):
   df = pd.DataFrame()
   for line in fp:
     # Float precision helps to avoid rounding errors, but it does hurt performance
-    df = pd.concat([df, pd.read_table(fp.filename(),
+    df = pd.concat([df, pd.read_csv(fp.filename(),
                     float_precision='round_trip', delimiter = delimiter)], axis = 0,
                     ignore_index = True, sort = False)
     fp.nextfile()

@@ -7,7 +7,7 @@ import re
 import pandas as pd
 
 
-def expand_location_code(cls, code):
+def expand_location_code(code):
   """
   Convert a location code (String) to its full name. The file `locations.csv`
   contains a dictionary of the key-value pairs. If original string is
@@ -34,7 +34,7 @@ def expand_location_code(cls, code):
     return code
 
 
-def is_location_year(cls, trait):
+def is_location_year(trait):
   """
   Determine if value is a (location code, year) pair
 
@@ -72,7 +72,7 @@ def is_location_year(cls, trait):
   return True
 
 
-def get_location_year(cls, trait):
+def get_location_year(trait):
   """
   Determine if value is a (location code, year) pair
 
@@ -120,7 +120,7 @@ def get_location_year(cls, trait):
   return location_code, year
 
 
-def loyr_to_filename(cls, trait):
+def loyr_to_filename(trait):
   """
   Extract the location and year from a trait
 
@@ -144,8 +144,8 @@ def loyr_to_filename(cls, trait):
 
   # Check if the trait id is a location-year pair or otherwise
   # Set it's filename according to which identifier is used
-  if cls.is_location_year(trait_id):
-    location, year = cls.get_location_year(trait)
+  if is_location_year(trait_id):
+    location, year = get_location_year(trait)
     trait_id = "_".join([location, str(year)]).strip()
   else:
     trait_id = trait_id.strip()
@@ -153,7 +153,7 @@ def loyr_to_filename(cls, trait):
   return trait_id
 
 
-def filename_to_loyr(cls, filename):
+def filename_to_loyr(filename):
   """
   Convert filename into a location year truncated string
 
@@ -195,7 +195,7 @@ def filename_to_loyr(cls, filename):
   return f"{prefix}{suffix}"
 
 
-def trait_to_identifier(cls, trait):
+def trait_to_identifier(trait):
   """Strip string of whitespace so that it can be used as an identifier to search the dataset with.
 
   Args:
@@ -217,7 +217,7 @@ def trait_to_identifier(cls, trait):
 
   # Check if the trait id is a location-year pair or otherwise
   # Set it's filename according to which identifier is used
-  if cls.is_location_year(trait_id):
+  if is_location_year(trait_id):
     trait_id = trait_id.strip()
   else:
     trait_id = trait_id.strip()
@@ -225,7 +225,7 @@ def trait_to_identifier(cls, trait):
   return trait_id
 
 
-def trait_to_column(cls, trait):
+def trait_to_column(trait):
   """Remove trailing location-year value from trait string.
 
   Args:
@@ -246,7 +246,7 @@ def trait_to_column(cls, trait):
   return result
 
 
-def column_to_trait(cls, column_name, filename):
+def column_to_trait(column_name, filename):
   """Convert a short column name back into a long format trait
 
   Args:
@@ -265,7 +265,7 @@ def column_to_trait(cls, column_name, filename):
   # Check for the type of column name
   # I.e., does it contain a LOYR pair
   candidate_loyr = f"{filename[:2]}{filename[-2:]}"
-  if cls.is_location_year(candidate_loyr):
+  if is_location_year(candidate_loyr):
     return f"{column_name}_{filename[:2]}{filename[-2:]}"
   else:
     return f"{column_name}_{filename}"

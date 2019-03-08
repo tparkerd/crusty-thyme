@@ -5,13 +5,14 @@ Transform the long format of traits by line, where the trait contains location
 and year. It splits a single file into N files, where N is the number of
 location and year combinations.
 
-Expected input:
+Expected input format:
   N files, M traits, P lines
-  Line/Pedigree, LocationYear 4-tuple,  Trait 1, Trait 2, Trait 3, ...Trait M
+  Line/Pedigree, LocationYear 4-tuple, Trait 1, Trait 2, Trait 3, ...Trait M
   Line 1, 1, 2, 3, 4, 5...M
   Line 2, 1, 2, 3, 4, 5...M
   ...
   Line P, 1, 2, 3, 4, 5...M
+
 
 """
 
