@@ -1,9 +1,12 @@
 """
-CSV Dataset Transformer
+NOTE(tparker): This may have possibly been replaced by the `transform.util.cut`
+module. Last I checked, the `cut.py` script was fully functional.
 
-This is the original transformer that was meant to transform the long format of
-traits by line, where the trait contains location and year. It splits a single
-file into N files, where N is the number of location and year combinations.
+VCF Dataset Transformer
+
+This is the original transformer that was meant to transform the massive genotype
+file (.012 VCF file format) into separate genotypes, split up by chromosome. The
+original file contains all of the genotypes for every line and every chromosome.
 
 Expected input: 2.from12.setaria.maf0.1.maxMissing0.1.allLines.012
   1 0       2       0       1       2       0       1       2       2       
@@ -17,11 +20,11 @@ Expected input: 2.from12.setaria.maf0.1.maxMissing0.1.allLines.012
   9 8       2       1       1       2       1       1       0       0       
   10 9       2       0       2       2       0       1       2       2      
 
-In order to accomplish this, we can use `awk` to find the first instance of each
-chromosome.
+We can check what lines delimit the chromosomes, we can use `awk` to find the first
+instance of each chromosome.
 
   $ awk -F'\t' '!a[$1]++{print NR":"$0}' inputfile.012
-    awk -F'\t' '!a[$1]++{print NR":"$0}' 2.from12.setaria.maf0.1.maxMissing0.1.allLines.012.pos
+  $ awk -F'\t' '!a[$1]++{print NR":"$0}' 2.from12.setaria.maf0.1.maxMissing0.1.allLines.012.pos
   1:Chr_01	110
   435559:Chr_02	8027
   954461:Chr_03	30108
@@ -33,6 +36,26 @@ chromosome.
   3660804:Chr_09	14630
   4231903:scaffold_36	4187
   4232168:scaffold_43	20203
+
+Expected output:
+  The output will be identical to the original .012 file, but contains only one chromosome or 
+  chromosome-like structure (i.e., scaffold)
+
+  The naming convention for generated files is:
+  <chromsome-shortname>_<user-provided-identifier>.012
+  The chromsome shortname is usually "chr#"
+  The user-provided identifier is usually the shortname of the species (e.g., 'maize' or 'setaria')
+  Example generated file list:
+    chr1_maize.012
+    chr2_maize.012
+    chr3_maize.012
+    chr4_maize.012
+    chr5_maize.012
+    chr6_maize.012
+    chr7_maize.012
+    chr8_maize.012
+    chr9_maize.012
+    chr10_maize.012
 
 """
 
