@@ -35,10 +35,10 @@ def stripLine(line):
 	"""
 	xs = line.split('\t')
 	xs = [ x.strip() for x in xs ]
-	# Replace missing calls (-1) with NA
-	for i, x in enumerate(xs):
-		if x == '-1':
-			xs[i] = 'NA'
+	# # Replace missing calls (-1) with NA
+	# for i, x in enumerate(xs):
+	# 	if x == '-1':
+	# 		xs[i] = 'NA'
 	return xs
 
 def process(args):
