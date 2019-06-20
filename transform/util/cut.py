@@ -109,7 +109,7 @@ def process(args):
 
 
     filename = f'{args.outdir}/{chromosome}_{args.name}.012.pos'
-    message = f"{chromosome}\t{snp}\n"
+    message = f"{id_num}\t{snp}\n"
     if args.write:
       with open(filename, 'a+') as ofp:
         ofp.write(message)
@@ -127,7 +127,7 @@ def process(args):
   # Copy the individual/line files
   for i, c in enumerate(erdbeere.keys()):
     dest = f'{args.outdir}/{c}_{args.name}.012.indv'
-    logging.info(dest)
+    logging.debug(dest)
     try:
       if args.write:
         shutil.copyfile(args.individuals, dest)
