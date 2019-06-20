@@ -18,6 +18,7 @@ import datetime
 import fileinput as fi
 import logging
 import os
+import re
 import shutil
 import sys
 
@@ -53,36 +54,67 @@ def process(args):
   except:
     raise
 
+
+  # Pull out and create of the position files
   if args.debug:
     print('/============= .pos =============')
   posfp = fi.input(args.positions)
+  # Get the number of SNPs
   length_of_positions_file = 0
   with open(args.positions, 'r') as tmpposfp:
     for line in tmpposfp:
       length_of_positions_file += 1
+
   erdbeere = {} # placeholder variable name
-  current_chromosome = None
+  last_observered_chromosome = None
   max_lineno = 0
   for line in tqdm(posfp, desc = "extract postions (by chromosome)", total = length_of_positions_file):
     line = stripLine(line)
     logging.debug(line)
     chromosome, snp = line
-    if current_chromosome != chromosome:
-      current_chromosome = chromosome
+
+    # Pull out the string identifier for the chromosome
+    # This varies between the input files
+    # For example, the setaria diversity panel includes "Chr" before each 
+    # actual integer to identify the chromosome
+    # This was included because scaffolds were included in the sequencing
+    # As such, I decided to parse the string identifier with regex and to allow
+    # for the qualifying prefix to be optional
+    # Therefore, if just a number is provided, then it is assumed to be a
+    # chromosome
+    pattern = '(?P<label>[a-zA-Z]+)?_?(?P<id_num>\d+)'
+    prog = re.compile(pattern)
+    match = prog.fullmatch(chromosome)
+    logging.debug(match.groups())
+    prefix = 'chr' # assume there is no match, and therefore a chromosome
+    if match.group('label') is not None:
+      prefix = f"{match.group('label').lower()}"
+
+    # All genomic sequences (chr, scaffolds, etc.) should have a numeric value
+    # paired with it
+    if match.group('id_num') is None:
+      raise Exception(f'Position file has invalid format. Genomic sequence object (e.g., chr or scaffold) does not include numeric identifier.')
+    id_num = int(match.group('id_num'))
+
+    chromosome = f'{prefix}{id_num}'
+    
+    # Once a new chromosome is encountered, initialize it
+    if last_observered_chromosome != chromosome:
+      last_observered_chromosome = chromosome
       erdbeere[chromosome] = {}
       erdbeere[chromosome]['data'] = {}
       erdbeere[chromosome]['data']['genotype'] = []
       erdbeere[chromosome]['min'] = posfp.lineno()
     erdbeere[chromosome]['max'] = posfp.lineno()
-    prefix = current_chromosome[:3].lower()
-    id_num = str(int(current_chromosome[-2:]))
-    filename = f'{args.outdir}/{prefix}_{args.name}.012.pos'
-    message = f"{str(int(current_chromosome[-2:]))}\t{snp}\n"
+
+
+    filename = f'{args.outdir}/{chromosome}_{args.name}.012.pos'
+    message = f"{chromosome}\t{snp}\n"
     if args.write:
       with open(filename, 'a+') as ofp:
         ofp.write(message)
   # Make sure to define the upper bound for the last chromosome
-  erdbeere[current_chromosome]['max'] = posfp.lineno()
+  erdbeere[last_observered_chromosome]['max'] = posfp.lineno()
 
   logging.debug(erdbeere)
 
@@ -94,7 +126,8 @@ def process(args):
   indvdf = pd.DataFrame(indvxs)
   # Copy the individual/line files
   for i, c in enumerate(erdbeere.keys()):
-    dest = f'{args.outdir}/{c[:3].lower()}_{args.name}.012.indv'
+    dest = f'{args.outdir}/{c}_{args.name}.012.indv'
+    logging.info(dest)
     try:
       if args.write:
         shutil.copyfile(args.individuals, dest)
@@ -112,8 +145,7 @@ def process(args):
     chr_lowerbound = erdbeere[c]['min']
     chr_upperbound = erdbeere[c]['max'] + 1
     alias = c
-    c = f'{c[:3].lower()}_{args.name}.012'
-    filename = f'{args.outdir}/{c}'
+    filename = f'{args.outdir}/{c}_{args.name}.012'
     # For each line in the genotype (.012) file... and literally the line as in pedigree
     with open(args.genotypes, 'r') as genofp:
       for line in tqdm(genofp, desc = f"extract genotype (by line) for {alias}", total = length_of_genotype_file):
