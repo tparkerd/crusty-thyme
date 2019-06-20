@@ -16,13 +16,14 @@ Args:
 import argparse
 import datetime
 import fileinput as fi
+import logging
 import os
 import shutil
 import sys
-from pprint import pprint
 
 import pandas as pd
 from tqdm import tqdm
+
 
 def stripLine(line):
 	"""Converts a tab-delimited string to a list. Each element is trimmed of
@@ -64,8 +65,7 @@ def process(args):
   max_lineno = 0
   for line in tqdm(posfp, desc = "extract postions (by chromosome)", total = length_of_positions_file):
     line = stripLine(line)
-    if args.debug:
-      print(line)
+    logging.debug(line)
     chromosome, snp = line
     if current_chromosome != chromosome:
       current_chromosome = chromosome
@@ -76,15 +76,15 @@ def process(args):
     erdbeere[chromosome]['max'] = posfp.lineno()
     prefix = current_chromosome[:3].lower()
     id_num = str(int(current_chromosome[-2:]))
-    filename = f'{args.outdir}/{prefix}{id_num}_{args.name}.012.pos'
+    filename = f'{args.outdir}/{prefix}_{args.name}.012.pos'
     message = f"{str(int(current_chromosome[-2:]))}\t{snp}\n"
-    with open(filename, 'a+') as ofp:
-      ofp.write(message)
+    if args.write:
+      with open(filename, 'a+') as ofp:
+        ofp.write(message)
   # Make sure to define the upper bound for the last chromosome
   erdbeere[current_chromosome]['max'] = posfp.lineno()
 
-  if args.verbose:
-    pprint(erdbeere)
+  logging.debug(erdbeere)
 
   # Find the pedigree name for each genotype
   indvxs = []
@@ -94,40 +94,15 @@ def process(args):
   indvdf = pd.DataFrame(indvxs)
   # Copy the individual/line files
   for i, c in enumerate(erdbeere.keys()):
-    dest = f'{args.outdir}/{c[:3].lower()}{str(int(c[-2:]))}_{args.name}.012.indv'
+    dest = f'{args.outdir}/{c[:3].lower()}_{args.name}.012.indv'
     try:
-      if not args.debug:
+      if args.write:
         shutil.copyfile(args.individuals, dest)
-      if args.verbose:
-        print(f'Copying {args.individuals} to {dest}')
+      logging.debug(f'Copying {args.individuals} to {dest}')
     except:
       raise
-  if args.verbose:
-    pprint(indvdf)
+  logging.debug(indvdf)
   
-  # # Cut out the columns for each
-  # genoxs = []
-  # # Count the number of lines in the genotype table for progress info
-  # length_of_genotype_file = 0
-  # with open(args.genotypes, 'r') as tmp_genofp:
-  #   length_of_genotype_file += 1
-  # with open(args.genotypes, 'r') as genofp:
-  #   for line in tqdm(genofp, desc="extract genotype (by line)", total = length_of_genotype_file):
-  #     xs = stripLine(line)
-  #     # For each chromosome, pull out the columns from the genotype
-  #     for i, c in enumerate(erdbeere.keys()):
-  #       chr_lowerbound = erdbeere[c]['min']
-  #       chr_upperbound = erdbeere[c]['max'] + 1
-  #       xss = xs[chr_lowerbound:chr_upperbound]
-  #       c = f'{c[:3].lower()}{str(int(c[-2:]))}_{args.name}.012'
-  #       filename = f'{args.outdir}/{c}'
-  #       message = '\t'.join(xss)
-  #       with open(filename, 'a+') as chromome_genofp:
-  #         if not args.debug:
-  #           chromome_genofp.write(f"{message}\n")
-  #         if args.verbose:
-  #           print(f"{message}")
-
   length_of_genotype_file = 0
   with open(args.genotypes, 'r') as tmp_genofp:
     length_of_genotype_file += 1
@@ -137,7 +112,7 @@ def process(args):
     chr_lowerbound = erdbeere[c]['min']
     chr_upperbound = erdbeere[c]['max'] + 1
     alias = c
-    c = f'{c[:3].lower()}{str(int(c[-2:]))}_{args.name}.012'
+    c = f'{c[:3].lower()}_{args.name}.012'
     filename = f'{args.outdir}/{c}'
     # For each line in the genotype (.012) file... and literally the line as in pedigree
     with open(args.genotypes, 'r') as genofp:
@@ -146,10 +121,9 @@ def process(args):
         xss = xs[chr_lowerbound:chr_upperbound]
         message = '\t'.join(xss)
         with open(filename, 'a+') as chromome_genofp:
-          if not args.debug:
+          if args.write:
             chromome_genofp.write(f"{message}\n")
-          if args.verbose:
-            print(f"{message}")
+          logging.debug(f"{message}")
 
 def parseOptions():
   """
@@ -173,8 +147,19 @@ def parseOptions():
                       help = "name of species used in naming output files")
   parser.add_argument("--debug", action = "store_true", help = "enables --verbose and disables writes to disk")
   args = parser.parse_args()
+  args.write = True
+
   if args.debug is True:
     args.verbose = True
+    args.write = False
+
+  logging_level = logging.INFO
+
+  if args.debug:
+    logging_level = logging.DEBUG
+  
+  logging_format = '%(asctime)s - %(levelname)s - %(filename)s %(lineno)d - %(message)s'
+  logging.basicConfig(format=logging_format, level=logging_level)
   
   return args
 
